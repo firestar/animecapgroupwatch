@@ -10,6 +10,7 @@ import java.util.UUID;
 public class Session {
     public Account account;
     public UUID sessionKey;
+    public Session(){}
     public Session(Account account, UUID sessionKey){
         this.account = account;
         this.sessionKey = sessionKey;

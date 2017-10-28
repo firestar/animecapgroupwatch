@@ -11,6 +11,9 @@ import java.util.Set;
  */
 public class Episode {
 
+    public Episode(){
+
+    }
     public Long id;
 
     @JsonIgnore
