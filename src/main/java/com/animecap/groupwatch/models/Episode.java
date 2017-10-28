@@ -1,6 +1,6 @@
 package com.animecap.groupwatch.models;
 
-import com.animecap.rc.relationship.WatchingRelation;
+import com.animecap.groupwatch.relationship.WatchingRelation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
