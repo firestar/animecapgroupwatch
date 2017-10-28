@@ -20,7 +20,6 @@ import java.io.File;
  */
 @SpringBootApplication
 @EnableScheduling
-@EnableTransactionManagement
 @EnableDiscoveryClient
 @EnableAutoConfiguration
 @Import({WebSocketConfiguration.class})
