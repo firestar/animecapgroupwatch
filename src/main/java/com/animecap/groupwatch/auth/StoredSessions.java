@@ -15,7 +15,8 @@ public class StoredSessions {
         if(contains(animecapAPIService, key)) {
             Session session = sessions.get(key);
             long accessTime = System.currentTimeMillis();
-            sessionTemp.entrySet().parallelStream().forEach(e->{
+
+            new TreeMap<Long, String>(sessionTemp).entrySet().parallelStream().forEach(e->{
                 if(e.getValue().equals(key)) {
                     sessionTemp.remove(e.getKey());
                 }
