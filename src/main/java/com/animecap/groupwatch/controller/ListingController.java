@@ -73,7 +73,7 @@ public class ListingController {
                     }
                     timeoutCheck.get(newTime).add(sessionKey);
                     sessionToTimeoutCheck.put(sessionKey, newTime);
-                    this.template.convertAndSend("/listen/group/renew/" + sessionKey, groupId);
+                    this.template.convertAndSend("/listen/renew/" + sessionKey, groupId);
                 }
             }
         }
@@ -85,7 +85,7 @@ public class ListingController {
             alternate=true;
             for (Map.Entry<String, List<String>> group : groupMembers.entrySet()) {
                 for (String session : group.getValue()) {
-                    this.template.convertAndSend("/listen/group/update/" + session, new Object[]{group.getKey()});
+                    this.template.convertAndSend("/listen/update/" + session, new Object[]{group.getKey()});
                     if(!timeToRespond.containsKey(group.getKey())){
                         timeToRespond.put(group.getKey(), new HashMap<>());
                     }
@@ -116,7 +116,7 @@ public class ListingController {
                                     if (Math.abs(positionLeader - position) > 2) {
                                         if (!session.equals(groupLeaders.get(group.getKey())[3])) {
                                             System.out.println("Session time update: " + session + " to: " + positionLeader + " from: " + position);
-                                            this.template.convertAndSend("/listen/group/command/" + session, new Object[]{
+                                            this.template.convertAndSend("/listen/command/" + session, new Object[]{
                                                     "seek",
                                                     group.getKey(),
                                                     positionLeader // adjust for lag
@@ -158,7 +158,7 @@ public class ListingController {
                                             newLeaderSession
                                     });
                                     groupMembers.get(group).parallelStream().forEach(s -> {
-                                        this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                                        this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                                 "leader",
                                                 leaderSession.getAccount().id,
                                                 leaderSession.getAccount().user,
@@ -169,7 +169,7 @@ public class ListingController {
                                 }
                             }
                             groupMembers.get(group).parallelStream().forEach(s -> {
-                                this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                                this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                         "left",
                                         session.getAccount().id,
                                         session.getAccount().user,
@@ -231,7 +231,7 @@ public class ListingController {
 
         System.out.print("sessionToTimeoutCheck: ");
         System.out.println(sessionToTimeoutCheck);*/
-        this.template.convertAndSend("/listen/group/listing/", nameToGroup);
+        this.template.convertAndSend("/listen/listing/", nameToGroup);
     }
     private void registerSession(String sessionKey, String group){
         if(!sessionToGroup.containsKey(sessionKey)) {
@@ -247,7 +247,7 @@ public class ListingController {
         }
     }
 
-    @MessageMapping("/group/chat")
+    @MessageMapping("/chat")
     public void chatMessage(@Payload ChatMessage message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         if(new StoredSessions().contains(animecapAPIService, message.getSession())){
             Session session = new StoredSessions().get(animecapAPIService, message.getSession());
@@ -263,7 +263,7 @@ public class ListingController {
                 });
                 if(groupMembers.containsKey(groupId)) {
                     groupMembers.get(groupId).parallelStream().forEach(s -> {
-                        this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                        this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                 "message",
                                 time,
                                 session.getAccount().user,
@@ -277,7 +277,7 @@ public class ListingController {
         }
     }
 
-    @MessageMapping("/group/renew")
+    @MessageMapping("/renew")
     public void sessionRenew(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         if(new StoredSessions().contains(animecapAPIService, message.getSession())){
             Session session = new StoredSessions().get(animecapAPIService, message.getSession());
@@ -298,13 +298,13 @@ public class ListingController {
                     }
                 }
             }
-            this.template.convertAndSend("/listen/group/renewed/"+session.getSessionKey(), new HashMap<>());
+            this.template.convertAndSend("/listen/renewed/"+session.getSessionKey(), new HashMap<>());
         }else{
             return;
         }
     }
 
-    @MessageMapping("/group/register")
+    @MessageMapping("/register")
     public void sessionRegister(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
@@ -368,7 +368,7 @@ public class ListingController {
             gi.setGroup(groupId);
             if(groupMembers.containsKey(groupId)) {
                 groupMembers.get(groupId).parallelStream().forEach(s -> {
-                    this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                    this.template.convertAndSend("/listen/command/" + s, new Object[]{
                             "joined",
                             session.getAccount().id,
                             session.getAccount().user,
@@ -376,24 +376,24 @@ public class ListingController {
                     });
                 });
             }
-            this.template.convertAndSend("/listen/group/joined/"+session.getSessionKey(), gi);
-            this.template.convertAndSend("/listen/group/listing/", nameToGroup);
+            this.template.convertAndSend("/listen/joined/"+session.getSessionKey(), gi);
+            this.template.convertAndSend("/listen/listing/", nameToGroup);
         }else{
             return;
         }
     }
 
-    @MessageMapping("/group/listing")
+    @MessageMapping("/listing")
     public void groupListing(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         if(new StoredSessions().contains(animecapAPIService, message.getSession())){
             Session session = new StoredSessions().get(animecapAPIService, message.getSession());
-            this.template.convertAndSend("/listen/group/listing/", nameToGroup);
+            this.template.convertAndSend("/listen/listing/", nameToGroup);
         }else{
             return;
         }
     }
 
-    @MessageMapping("/group/load")
+    @MessageMapping("/load")
     public void loadVideo(@Payload LoadVideo message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
@@ -403,7 +403,7 @@ public class ListingController {
                     Episode e = animecapAPIService.episodeInfo(Long.toString(message.getEpisode()));
                     currentEpisode.put(message.getGroup(),e);
                     groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
-                        this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                        this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                 "load",
                                 e
                         });
@@ -415,7 +415,7 @@ public class ListingController {
         }
     }
 
-    @MessageMapping("/group/update")
+    @MessageMapping("/update")
     public void updateTime(@Payload VideoPosition message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
@@ -426,13 +426,13 @@ public class ListingController {
             return;
         }
     }
-    @MessageMapping("/group/play")
+    @MessageMapping("/play")
     public void playVideo(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
             if(groupMembers.containsKey(message.getGroup())) {
                 groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
-                    this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                    this.template.convertAndSend("/listen/command/" + s, new Object[]{
                             "play"
                     });
                 });
@@ -441,13 +441,13 @@ public class ListingController {
             return;
         }
     }
-    @MessageMapping("/group/pause")
+    @MessageMapping("/pause")
     public void pauseVideo(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
             if(groupMembers.containsKey(message.getGroup())) {
                 groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
-                    this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                    this.template.convertAndSend("/listen/command/" + s, new Object[]{
                             "pause"
                     });
                 });
@@ -457,7 +457,7 @@ public class ListingController {
         }
     }
 
-    @MessageMapping("/group/leave")
+    @MessageMapping("/leave")
     public void groupLeave(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
@@ -480,7 +480,7 @@ public class ListingController {
                                 newLeaderSession
                             });
                             groupMembers.get(group).parallelStream().forEach(s -> {
-                                this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                                this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                     "leader",
                                     leaderSession.getAccount().id,
                                     leaderSession.getAccount().user,
@@ -491,7 +491,7 @@ public class ListingController {
                         }
                     }
                     groupMembers.get(group).parallelStream().forEach(s -> {
-                        this.template.convertAndSend("/listen/group/command/" + s, new Object[]{
+                        this.template.convertAndSend("/listen/command/" + s, new Object[]{
                             "left",
                             session.getAccount().id,
                             session.getAccount().user,
@@ -500,7 +500,7 @@ public class ListingController {
                     });
                 }
             }
-            this.template.convertAndSend("/listen/group/left/"+session.getSessionKey(), new Object[]{});
+            this.template.convertAndSend("/listen/left/"+session.getSessionKey(), new Object[]{});
         }else{
             return;
         }
