@@ -57,6 +57,7 @@ public class StoredSessions {
             if(session!=null){
                 long accessTime = System.currentTimeMillis();
                 sessions.put(key, new SessionTemp(accessTime, key, session));
+                return true;
             }
             return false;
         }
