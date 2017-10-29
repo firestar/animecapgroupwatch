@@ -114,6 +114,7 @@ public class ListingController {
                 }
             }
         }
+        this.template.convertAndSend("/listen/listing/", groups);
     }
     public void updateGroupMessages(GroupInfo groupInfo){
         groupInfo.setMessages(
