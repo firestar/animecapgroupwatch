@@ -40,6 +40,7 @@ public class ListingController {
     public HashMap<String, Object[]> groupLeaders = new HashMap<>();
     private HashMap<String, String> sessionToGroup = new HashMap<>();
 
+    public TreeMap<String, GroupInfo> groups = new TreeMap<>();
     public HashMap<String, String> groupNames = new HashMap<>();
     public TreeMap<String, String> nameToGroup = new TreeMap<>();
     public HashMap<String, Episode> currentEpisode = new HashMap<>();
@@ -48,7 +49,7 @@ public class ListingController {
     private TreeMap<Long, List<String>> checks = new TreeMap<>();
     private TreeMap<Long, List<String>> timeoutCheck = new TreeMap<>();
     private HashMap<String, Long> sessionToTimeoutCheck = new HashMap<>();
-    private TreeMap<String, GroupInfo> groups = new TreeMap<String, GroupInfo>();
+
     //private HashMap<String, Boolean> playing = new HashMap<>();
 
     private HashMap<String, HashMap<String, Double>> positionInVideo = new HashMap<>();
@@ -83,7 +84,7 @@ public class ListingController {
         return null;
     }
     public GroupInfo createGroupByName(String groupId, String groupName){
-        if(!groups.containsKey(groupName)){
+        if(!groups.containsKey(groupId)){
             GroupInfo groupInfo = new GroupInfo();
             groupInfo.group = groupId;
             groupInfo.groupName = groupName;

@@ -17,6 +17,9 @@ public class GroupInfo {
     public Episode episode=null;
     public Object[] leader = new Object[]{};
     public TreeMap<Long, List<Object[]>> messages = new TreeMap<>();
+
+    public GroupInfo(){}
+
     public void setUsers(List<Object[]> users) {
         this.users = users;
     }
