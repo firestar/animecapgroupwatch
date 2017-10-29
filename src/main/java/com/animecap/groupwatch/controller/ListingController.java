@@ -391,7 +391,7 @@ public class ListingController {
             String groupId = UUID.randomUUID().toString();
             if(nameToGroup.containsKey(message.getGroup())){
                 groupId = nameToGroup.get(message.getGroup());
-                groupInfo = getGroupById(message.getGroup());
+                groupInfo = getGroupById(groupId);
             }else{
                 groupInfo = createGroupByName(groupId, message.getGroup());
                 nameToGroup.put(message.getGroup(), groupId);
