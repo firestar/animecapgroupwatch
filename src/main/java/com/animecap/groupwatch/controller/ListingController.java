@@ -48,7 +48,7 @@ public class ListingController {
     private TreeMap<Long, List<String>> checks = new TreeMap<>();
     private TreeMap<Long, List<String>> timeoutCheck = new TreeMap<>();
     private HashMap<String, Long> sessionToTimeoutCheck = new HashMap<>();
-    private List<GroupInfo> groups = new ArrayList<>();
+    private TreeMap<String, GroupInfo> groups = new TreeMap<String, GroupInfo>();
     //private HashMap<String, Boolean> playing = new HashMap<>();
 
     private HashMap<String, HashMap<String, Double>> positionInVideo = new HashMap<>();
@@ -61,6 +61,72 @@ public class ListingController {
         return "server is up";
     }
 
+    public GroupInfo getGroupByName(String groupName){
+        if(groups.size()==0){
+            return null;
+        }
+        if(!nameToGroup.containsKey(groupName)){
+            return null;
+        }
+        if(groups.containsKey(nameToGroup.get(groupName))){
+            return groups.get(nameToGroup.get(groupName));
+        }
+        return null;
+    }
+    public GroupInfo getGroupById(String groupId){
+        if(groups.size()==0){
+            return null;
+        }
+        if(groups.containsKey(groupId)){
+            return groups.get(groupId);
+        }
+        return null;
+    }
+    public GroupInfo createGroupByName(String groupId, String groupName){
+        if(!groups.containsKey(groupName)){
+            GroupInfo groupInfo = new GroupInfo();
+            groupInfo.group = groupId;
+            groupInfo.groupName = groupName;
+            groups.put(groupName, groupInfo);
+            return groupInfo;
+        }
+        return null;
+    }
+    public void removeGroupInfo(String groupId){
+        if(groups.size()==0){
+            return;
+        }
+        groups.remove(groupId);
+    }
+    public void updateMemberList(GroupInfo groupInfo, StoredSessions ss){
+        if(groupMembers.containsKey(groupInfo.group)) {
+            groupInfo.users = new ArrayList<>();
+            for (String member : groupMembers.get(groupInfo.group)) {
+                if (ss.contains(animecapAPIService, member)) {
+                    Session memberSession = ss.get(animecapAPIService, member);
+                    groupInfo.users.add(new Object[]{
+                            memberSession.getAccount().id,
+                            memberSession.getAccount().user,
+                            memberSession.getAccount().level
+                    });
+                }
+            }
+        }
+    }
+    public void updateGroupMessages(GroupInfo groupInfo){
+        groupInfo.setMessages(
+            messages.get(groupInfo.group)
+                .descendingMap()
+                .entrySet()
+                .stream()
+                .limit(15)
+                .collect(
+                    TreeMap::new,
+                    (map, entry) -> map.put(entry.getKey(), entry.getValue()),
+                    Map::putAll
+                )
+        );
+    }
     @Scheduled(fixedRate = 1000)
     private void checkActive(){
         while(checks.size()>0 && checks.firstEntry()!=null && checks.firstEntry().getKey()<=System.currentTimeMillis()){
@@ -198,20 +264,13 @@ public class ListingController {
                     String groupName = groupNames.remove(group);
                     nameToGroup.remove(groupName);
                 }
-                int numberOfGroups = groups.size();
-                for(int i=0;i<numberOfGroups;i++){
-                    if(groups.get(i).group!=null) {
-                        if (groups.get(i).group.equals(group)) {
-                            groups.remove(i);
-                            break;
-                        }
-                    }
-                }
-                if(numberOfGroups>groups.size()) { // was one removed?
-                    this.template.convertAndSend("/listen/listing/", groups);
-                }
                 if(messages.containsKey(group)){
                     messages.remove(group);
+                }
+                int numberOfGroups = groups.size();
+                removeGroupInfo(group);
+                if(numberOfGroups>groups.size()) { // was one removed?
+                    this.template.convertAndSend("/listen/listing/", groups);
                 }
             }
         }
@@ -266,6 +325,7 @@ public class ListingController {
             Session session = new StoredSessions().get(animecapAPIService, message.getSession());
             if(sessionToGroup.containsKey(message.getSession())) {
                 String groupId = sessionToGroup.get(message.getSession());
+                GroupInfo groupInfo = getGroupById(groupId);
                 long time = System.currentTimeMillis();
                 if (!messages.get(groupId).containsKey(time)) {
                     messages.get(groupId).put(time, new ArrayList<>());
@@ -274,6 +334,9 @@ public class ListingController {
                     session.getAccount().user,
                     message.getMessage()
                 });
+                if(groupInfo!=null) {
+                    updateGroupMessages(groupInfo);
+                }
                 if(groupMembers.containsKey(groupId)) {
                     groupMembers.get(groupId).parallelStream().forEach(s -> {
                         this.template.convertAndSend("/listen/command/" + s, new Object[]{
@@ -322,11 +385,13 @@ public class ListingController {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
             Session session = ss.get(animecapAPIService, message.getSession());
-
+            GroupInfo groupInfo;
             String groupId = UUID.randomUUID().toString();
             if(nameToGroup.containsKey(message.getGroup())){
                 groupId = nameToGroup.get(message.getGroup());
+                groupInfo = getGroupById(message.getGroup());
             }else{
+                groupInfo = createGroupByName(groupId, message.getGroup());
                 nameToGroup.put(message.getGroup(), groupId);
                 groupNames.put(groupId, message.getGroup());
                 messages.put(groupId, new TreeMap<>());
@@ -352,33 +417,15 @@ public class ListingController {
                 }
                 checks.get(newTime).add(message.getSession());
             }
-            GroupInfo gi = new GroupInfo();
-            if(groupMembers.containsKey(groupId)) {
-                for (String member : groupMembers.get(groupId)) {
-                    if (ss.contains(animecapAPIService, member)) {
-                        gi.users.add(new Object[]{
-                                ss.get(animecapAPIService, member).getAccount().id,
-                                ss.get(animecapAPIService, member).getAccount().user,
-                                ss.get(animecapAPIService, member).getAccount().level
-                        });
-                    }
-                }
-            }
-            gi.setLeader(groupLeaders.get(groupId));
-            gi.setMessages(
-                messages.get(groupId)
-                    .descendingMap()
-                    .entrySet()
-                    .stream()
-                    .limit(25)
-                    .collect(
-                        TreeMap::new,
-                        (map, entry) -> map.put(entry.getKey(), entry.getValue()),
-                        Map::putAll
-                    )
-            );
-            gi.setEpisode(currentEpisode.get(groupId));
-            gi.setGroup(groupId);
+
+
+            // disabled as this is done on message submission
+            //updateGroupMessages(groupInfo);
+
+            updateMemberList(groupInfo, ss);
+
+            //disabled prefer setting this in load event
+            //groupInfo.setEpisode(currentEpisode.get(groupId));
             if(groupMembers.containsKey(groupId)) {
                 groupMembers.get(groupId).parallelStream().forEach(s -> {
                     this.template.convertAndSend("/listen/command/" + s, new Object[]{
@@ -389,8 +436,7 @@ public class ListingController {
                     });
                 });
             }
-            groups.add(gi);
-            this.template.convertAndSend("/listen/joined/"+session.getSessionKey(), gi);
+            this.template.convertAndSend("/listen/joined/"+session.getSessionKey(), groupInfo);
             this.template.convertAndSend("/listen/listing/", groups);
         }else{
             return;
@@ -415,8 +461,10 @@ public class ListingController {
             Session session = ss.get(animecapAPIService, message.getSession());
             if(groupLeaders.containsKey(message.getGroup())){
                 if(groupLeaders.get(message.getGroup())[3].equals(message.getSession())){
+                    GroupInfo groupInfo = getGroupById(message.getGroup());
                     Episode e = animecapAPIService.episodeInfo(Long.toString(message.getEpisode()));
                     currentEpisode.put(message.getGroup(),e);
+                    groupInfo.setEpisode(e);
                     groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
                         this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                 "load",
@@ -446,6 +494,8 @@ public class ListingController {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
             if(groupMembers.containsKey(message.getGroup())) {
+                GroupInfo groupInfo = getGroupById(message.getGroup());
+                if(groupInfo!=null) groupInfo.status = "play";
                 groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
                     this.template.convertAndSend("/listen/command/" + s, new Object[]{
                             "play"
@@ -461,6 +511,8 @@ public class ListingController {
         StoredSessions ss = new StoredSessions();
         if(ss.contains(animecapAPIService, message.getSession())){
             if(groupMembers.containsKey(message.getGroup())) {
+                GroupInfo groupInfo = getGroupById(message.getGroup());
+                if(groupInfo!=null) groupInfo.status = "pause";
                 groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
                     this.template.convertAndSend("/listen/command/" + s, new Object[]{
                             "pause"
@@ -484,16 +536,19 @@ public class ListingController {
             clearSession(message.getSession());
             if(group!=null){
                 if(groupMembers.containsKey(group)) {
+                    GroupInfo groupInfo = getGroupById(group);
                     if(groupLeaders.get(group)[3].equals(message.getSession())){
                         String newLeaderSession = groupMembers.get(group).get((int)Math.floor(Math.random()*(groupMembers.get(group).size()-1)));
                         if(ss.contains(animecapAPIService, newLeaderSession)){
                             Session leaderSession = ss.get(animecapAPIService, newLeaderSession);
-                            groupLeaders.put(group, new Object[]{
-                                leaderSession.getAccount().id,
-                                leaderSession.getAccount().user,
-                                leaderSession.getAccount().level,
-                                newLeaderSession
-                            });
+                            Object[] tmp = new Object[]{
+                                    leaderSession.getAccount().id,
+                                    leaderSession.getAccount().user,
+                                    leaderSession.getAccount().level,
+                                    newLeaderSession
+                            };
+                            groupLeaders.put(group, tmp);
+                            if(groupInfo!=null) groupInfo.leader = tmp;
                             groupMembers.get(group).parallelStream().forEach(s -> {
                                 this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                     "leader",
@@ -503,6 +558,7 @@ public class ListingController {
                                     newLeaderSession
                                 });
                             });
+
                         }
                     }
                     groupMembers.get(group).parallelStream().forEach(s -> {
@@ -513,6 +569,7 @@ public class ListingController {
                             session.getAccount().level
                         });
                     });
+                    if(groupInfo!=null) updateMemberList(groupInfo,ss);
                 }
             }
             this.template.convertAndSend("/listen/left/"+session.getSessionKey(), new Object[]{});

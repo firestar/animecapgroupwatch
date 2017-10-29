@@ -11,8 +11,10 @@ import java.util.TreeMap;
  */
 public class GroupInfo {
     public List<Object[]> users = new ArrayList<>();
-    public String group;
-    public Episode episode;
+    public String group=null;
+    public String groupName=null;
+    public String status="pause";
+    public Episode episode=null;
     public Object[] leader = new Object[]{};
     public TreeMap<Long, List<Object[]>> messages = new TreeMap<>();
     public void setUsers(List<Object[]> users) {
