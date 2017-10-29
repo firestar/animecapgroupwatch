@@ -114,7 +114,6 @@ public class ListingController {
                 }
             }
         }
-        this.template.convertAndSend("/listen/listing/", groups);
     }
     public void updateGroupMessages(GroupInfo groupInfo){
         groupInfo.setMessages(
@@ -183,7 +182,7 @@ public class ListingController {
                                         position += (System.currentTimeMillis() - responseTime) / 1000;
                                         positionLeader += (System.currentTimeMillis() - responseTime) / 1000;
                                     }
-                                    if (Math.abs(positionLeader - position) > 2) {
+                                    if (Math.abs(positionLeader - position) > 1) {
                                         if (!session.equals(groupLeaders.get(group.getKey())[3])) {
                                             System.out.println("Session time update: " + session + " to: " + positionLeader + " from: " + position);
                                             this.template.convertAndSend("/listen/command/" + session, new Object[]{
@@ -209,6 +208,7 @@ public class ListingController {
                 StoredSessions ss = new StoredSessions();
                 for (String sessionKey : sessionKeys) {
                     String group = sessionToGroup.get(sessionKey);
+                    GroupInfo groupInfo = getGroupById(group);
                     if (sessionToTimeoutCheck.containsKey(sessionKey)) {
                         sessionToTimeoutCheck.remove(sessionKey);
                     }
@@ -221,12 +221,15 @@ public class ListingController {
                                 String newLeaderSession = groupMembers.get(group).get((int)Math.floor(Math.random()*(groupMembers.get(group).size()-1)));
                                 if(ss.contains(animecapAPIService, newLeaderSession)){
                                     Session leaderSession = ss.get(animecapAPIService, newLeaderSession);
-                                    groupLeaders.put(group, new Object[]{
+
+                                    Object[] tmpLeader = new Object[]{
                                             leaderSession.getAccount().id,
                                             leaderSession.getAccount().user,
                                             leaderSession.getAccount().level,
                                             newLeaderSession
-                                    });
+                                    };
+                                    groupLeaders.put(group, tmpLeader);
+                                    if(groupInfo!=null) groupInfo.setLeader(tmpLeader);
                                     groupMembers.get(group).parallelStream().forEach(s -> {
                                         this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                                 "leader",
@@ -246,6 +249,8 @@ public class ListingController {
                                         session.getAccount().level
                                 });
                             });
+                            if(groupInfo!=null) updateMemberList(groupInfo, ss);
+                            if(groupInfo!=null) this.template.convertAndSend("/listen/listing/", groups);
                         }
                     }
                 }
