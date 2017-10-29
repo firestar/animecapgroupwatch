@@ -8,7 +8,6 @@ import java.util.TreeMap;
  * Created by Nathaniel on 3/14/2017.
  */
 public class StoredSessions {
-    private static TreeMap<String, SessionTemp> sessions = new TreeMap<>();
     public class SessionTemp{
         private long accessTime;
         private String sessionKey;
@@ -42,6 +41,9 @@ public class StoredSessions {
             this.session = session;
         }
     }
+
+    private static TreeMap<String, SessionTemp> sessions = new TreeMap<String, SessionTemp>();
+
     public Session get( AnimecapAPIService animecapAPIService, String key ){
         if(contains(animecapAPIService, key)) {
             SessionTemp sessionTemp = sessions.get(key);
@@ -52,6 +54,7 @@ public class StoredSessions {
         return null;
     }
     public boolean contains( AnimecapAPIService animecapAPIService, String key ){
+        System.out.println("KEY: "+key);
         if(!sessions.containsKey(key)){
             Session session = animecapAPIService.sessionInfo(key);
             if(session!=null){
