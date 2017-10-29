@@ -87,7 +87,7 @@ public class ListingController {
         if(!groups.containsKey(groupId)){
             GroupInfo groupInfo = new GroupInfo();
             groupInfo.group = groupId;
-            groupInfo.groupName = groupName;
+            groupInfo.name = groupName;
             groups.put(groupId, groupInfo);
             return groupInfo;
         }

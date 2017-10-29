@@ -12,7 +12,7 @@ import java.util.TreeMap;
 public class GroupInfo {
     public List<Object[]> users = new ArrayList<>();
     public String group=null;
-    public String groupName=null;
+    public String name=null;
     public String status="pause";
     public Episode episode=null;
     public Object[] leader = new Object[]{};
