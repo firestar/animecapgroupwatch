@@ -400,12 +400,14 @@ public class ListingController {
                 timeToRespond.put(groupId, new HashMap<>());
                 groupMembers.put(groupId, new ArrayList<>());
                 currentEpisode.put(groupId, null);
-                groupLeaders.put(groupId, new Object[]{
-                    session.getAccount().id,
-                    session.getAccount().user,
-                    session.getAccount().level,
-                    message.getSession()
-                });
+                Object[] tmp = new Object[]{
+                        session.getAccount().id,
+                        session.getAccount().user,
+                        session.getAccount().level,
+                        message.getSession()
+                };
+                groupLeaders.put(groupId, tmp);
+                groupInfo.setLeader(tmp);
             }
 
             registerSession(message.getSession(), groupId);
