@@ -162,10 +162,6 @@ public class ListingController {
                 }
             }
         }else {
-            System.out.println(positionInVideo);
-            System.out.println(groupMembers);
-            System.out.println(timeToRespond);
-            System.out.println(groupLeaders);
             alternate=false;
             StoredSessions ss = new StoredSessions();
             for (Map.Entry<String, List<String>> group : groupMembers.entrySet()) {
@@ -217,6 +213,7 @@ public class ListingController {
                     if (ss.contains(animecapAPIService, sessionKey)) {
                         Session session = ss.get(animecapAPIService, sessionKey);
                         if(groupMembers.containsKey(group)){
+                            groupMembers.get(group).remove(sessionKey);
                             if(groupLeaders.get(group)[3].equals(sessionKey)){
                                 String newLeaderSession = groupMembers.get(group).get((int)Math.floor(Math.random()*(groupMembers.get(group).size()-1)));
                                 if(ss.contains(animecapAPIService, newLeaderSession)){
