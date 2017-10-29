@@ -2,6 +2,7 @@ package com.animecap.groupwatch.controller;
 
 import com.animecap.groupwatch.api.auth.Session;
 import com.animecap.groupwatch.api.auth.StoredSessions;
+import com.animecap.groupwatch.api.models.Show;
 import com.animecap.groupwatch.messages.requests.ChatMessage;
 import com.animecap.groupwatch.messages.requests.LoadVideo;
 import com.animecap.groupwatch.messages.requests.SessionData;
@@ -468,7 +469,8 @@ public class ListingController {
                     Episode e = animecapAPIService.episodeInfo(Long.toString(message.getEpisode()));
                     currentEpisode.put(message.getGroup(),e);
                     groupInfo.setEpisode(e);
-                    groupInfo.setShow(e.getShow());
+                    Show show = animecapAPIService.showInfo(Long.toString(e.showId));
+                    groupInfo.setShow(show);
                     groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
                         this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                 "load",

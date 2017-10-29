@@ -19,6 +19,8 @@ public class Episode {
     @JsonIgnore
     public Show show;
 
+    public long showId;
+
     public int status, episode, version = 0;
     public String uuid;
     public float runtime = 0;
