@@ -469,6 +469,7 @@ public class ListingController {
                     Episode e = animecapAPIService.episodeInfo(Long.toString(message.getEpisode()));
                     currentEpisode.put(message.getGroup(),e);
                     groupInfo.setEpisode(e);
+                    System.out.println(e.showId);
                     Show show = animecapAPIService.showInfo(Long.toString(e.showId));
                     groupInfo.setShow(show);
                     groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
