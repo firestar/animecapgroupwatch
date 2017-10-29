@@ -45,7 +45,7 @@ public class StoredSessions {
     private static TreeMap<String, SessionTemp> sessions = new TreeMap<String, SessionTemp>();
 
     public Session get( AnimecapAPIService animecapAPIService, String key ){
-        if(contains(animecapAPIService, key)) {
+        if(this.contains(animecapAPIService, key)) {
             SessionTemp sessionTemp = sessions.get(key);
             long accessTime = System.currentTimeMillis();
             sessionTemp.setAccessTime(accessTime);
@@ -55,7 +55,7 @@ public class StoredSessions {
     }
     public boolean contains( AnimecapAPIService animecapAPIService, String key ){
         System.out.println("KEY: "+key);
-        if(!sessions.containsKey(key)){
+        if(sessions.size()==0 || (sessions.size()>0 && !sessions.containsKey(key))){
             Session session = animecapAPIService.sessionInfo(key);
             if(session!=null){
                 long accessTime = System.currentTimeMillis();
