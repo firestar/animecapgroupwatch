@@ -8,21 +8,46 @@ import java.util.TreeMap;
  * Created by Nathaniel on 3/14/2017.
  */
 public class StoredSessions {
-    private static TreeMap<String, Session> sessions = new TreeMap<>();
-    private static TreeMap<Long, String> sessionTemp = new TreeMap<>();
+    private static TreeMap<String, SessionTemp> sessions = new TreeMap<>();
+    public class SessionTemp{
+        private long accessTime;
+        private String sessionKey;
+        private Session session;
+        public SessionTemp(long accessTime, String sessionKey, Session session){
+            this.accessTime = accessTime;
+            this.sessionKey = sessionKey;
+            this.session = session;
+        }
+        public long getAccessTime() {
+            return accessTime;
+        }
 
+        public void setAccessTime(long accessTime) {
+            this.accessTime = accessTime;
+        }
+
+        public String getSessionKey() {
+            return sessionKey;
+        }
+
+        public void setSessionKey(String sessionKey) {
+            this.sessionKey = sessionKey;
+        }
+
+        public Session getSession() {
+            return session;
+        }
+
+        public void setSession(Session session) {
+            this.session = session;
+        }
+    }
     public Session get( AnimecapAPIService animecapAPIService, String key ){
         if(contains(animecapAPIService, key)) {
-            Session session = sessions.get(key);
+            SessionTemp sessionTemp = sessions.get(key);
             long accessTime = System.currentTimeMillis();
-
-            new TreeMap<Long, String>(sessionTemp).entrySet().parallelStream().forEach(e->{
-                if(e.getValue().equals(key)) {
-                    sessionTemp.remove(e.getKey());
-                }
-            });
-            sessionTemp.put(accessTime, key);
-            return session;
+            sessionTemp.setAccessTime(accessTime);
+            return sessionTemp.getSession();
         }
         return null;
     }
@@ -31,19 +56,10 @@ public class StoredSessions {
             Session session = animecapAPIService.sessionInfo(key);
             if(session!=null){
                 long accessTime = System.currentTimeMillis();
-                sessions.put(key, session);
-                sessionTemp.put(accessTime, key);
+                sessions.put(key, new SessionTemp(accessTime, key, session));
             }
             return false;
         }
         return true;
-    }
-
-    public TreeMap<Long, String> getSessionTemp() {
-        return sessionTemp;
-    }
-
-    public TreeMap<String, Session> getSessions() {
-        return sessions;
     }
 }
