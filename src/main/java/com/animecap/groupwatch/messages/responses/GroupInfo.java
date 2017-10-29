@@ -1,6 +1,7 @@
 package com.animecap.groupwatch.messages.responses;
 
 import com.animecap.groupwatch.api.models.Episode;
+import com.animecap.groupwatch.api.models.Show;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ public class GroupInfo {
     public String name=null;
     public String status="pause";
     public Episode episode=null;
+    public Show show=null;
     public Object[] leader = new Object[]{};
     public TreeMap<Long, List<Object[]>> messages = new TreeMap<>();
 
@@ -38,5 +40,17 @@ public class GroupInfo {
 
     public void setEpisode(Episode episode) {
         this.episode = episode;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setShow(Show show) {
+        this.show = show;
     }
 }

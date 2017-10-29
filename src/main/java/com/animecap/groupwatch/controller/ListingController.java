@@ -468,12 +468,14 @@ public class ListingController {
                     Episode e = animecapAPIService.episodeInfo(Long.toString(message.getEpisode()));
                     currentEpisode.put(message.getGroup(),e);
                     groupInfo.setEpisode(e);
+                    groupInfo.setShow(e.getShow());
                     groupMembers.get(message.getGroup()).parallelStream().forEach(s -> {
                         this.template.convertAndSend("/listen/command/" + s, new Object[]{
                                 "load",
                                 e
                         });
                     });
+                    this.template.convertAndSend("/listen/listing/", groups);
                 }
             }
         }else{
@@ -504,6 +506,7 @@ public class ListingController {
                             "play"
                     });
                 });
+                this.template.convertAndSend("/listen/listing/", groups);
             }
         }else{
             return;
@@ -521,6 +524,7 @@ public class ListingController {
                             "pause"
                     });
                 });
+                this.template.convertAndSend("/listen/listing/", groups);
             }
         }else{
             return;
@@ -573,6 +577,7 @@ public class ListingController {
                         });
                     });
                     if(groupInfo!=null) updateMemberList(groupInfo,ss);
+                    this.template.convertAndSend("/listen/listing/", groups);
                 }
             }
             this.template.convertAndSend("/listen/left/"+session.getSessionKey(), new Object[]{});
