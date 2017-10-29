@@ -4,7 +4,7 @@ node {
     def dockerImage = docker.build("buildprocess/docker", "./JenkinsCI-Docker/docker/")
     withEnv([
         'DOCKER_ACCOUNT=firestarthehack',
-        'IMAGE_VERSION=1.01',
+        'IMAGE_VERSION=1.02',
         'IMAGE_NAME=animecapgroupwatch',
         'RANCHER_STACK_NAME=AnimeCap',
         'RANCHER_SERVICE_NAME=GroupWatch',
