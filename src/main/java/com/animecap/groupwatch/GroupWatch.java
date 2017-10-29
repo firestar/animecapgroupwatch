@@ -1,7 +1,7 @@
 package com.animecap.groupwatch;
 
 import com.animecap.groupwatch.config.WebSocketConfiguration;
-import com.animecap.groupwatch.repositories.AnimecapAPIService;
+import com.animecap.groupwatch.api.repositories.AnimecapAPIService;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.File;
 
 /**
  * Created by Nathaniel on 10/28/2017.

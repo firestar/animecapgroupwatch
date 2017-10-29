@@ -1,4 +1,4 @@
-package com.animecap.groupwatch.models;
+package com.animecap.groupwatch.api.models;
 
 
 import java.util.HashSet;

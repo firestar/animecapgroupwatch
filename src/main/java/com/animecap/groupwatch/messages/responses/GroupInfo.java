@@ -1,7 +1,6 @@
 package com.animecap.groupwatch.messages.responses;
 
-import com.animecap.groupwatch.models.Account;
-import com.animecap.groupwatch.models.Episode;
+import com.animecap.groupwatch.api.models.Episode;
 
 import java.util.ArrayList;
 import java.util.List;

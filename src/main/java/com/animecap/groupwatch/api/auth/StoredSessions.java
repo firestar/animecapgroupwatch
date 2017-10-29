@@ -1,6 +1,6 @@
-package com.animecap.groupwatch.auth;
+package com.animecap.groupwatch.api.auth;
 
-import com.animecap.groupwatch.repositories.AnimecapAPIService;
+import com.animecap.groupwatch.api.repositories.AnimecapAPIService;
 
 import java.util.TreeMap;
 

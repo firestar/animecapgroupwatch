@@ -1,6 +1,6 @@
-package com.animecap.groupwatch.auth;
+package com.animecap.groupwatch.api.auth;
 
-import com.animecap.groupwatch.models.Account;
+import com.animecap.groupwatch.api.models.Account;
 
 import java.util.UUID;
 

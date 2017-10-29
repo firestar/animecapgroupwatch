@@ -1,6 +1,6 @@
 package com.animecap.groupwatch.messages.requests;
 
-import com.animecap.groupwatch.auth.Session;
+import com.animecap.groupwatch.api.auth.Session;
 
 /**
  * Created by Nathaniel on 4/10/2017.

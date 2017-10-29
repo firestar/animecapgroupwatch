@@ -1,8 +1,8 @@
-package com.animecap.groupwatch.repositories;
+package com.animecap.groupwatch.api.repositories;
 
-import com.animecap.groupwatch.auth.Session;
-import com.animecap.groupwatch.models.Episode;
-import com.animecap.groupwatch.models.Show;
+import com.animecap.groupwatch.api.auth.Session;
+import com.animecap.groupwatch.api.models.Episode;
+import com.animecap.groupwatch.api.models.Show;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.client.RestTemplate;

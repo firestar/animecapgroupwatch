@@ -1,14 +1,14 @@
 package com.animecap.groupwatch.controller;
 
-import com.animecap.groupwatch.auth.Session;
-import com.animecap.groupwatch.auth.StoredSessions;
+import com.animecap.groupwatch.api.auth.Session;
+import com.animecap.groupwatch.api.auth.StoredSessions;
 import com.animecap.groupwatch.messages.requests.ChatMessage;
 import com.animecap.groupwatch.messages.requests.LoadVideo;
 import com.animecap.groupwatch.messages.requests.SessionData;
 import com.animecap.groupwatch.messages.requests.VideoPosition;
 import com.animecap.groupwatch.messages.responses.GroupInfo;
-import com.animecap.groupwatch.models.Episode;
-import com.animecap.groupwatch.repositories.AnimecapAPIService;
+import com.animecap.groupwatch.api.models.Episode;
+import com.animecap.groupwatch.api.repositories.AnimecapAPIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -48,6 +48,7 @@ public class ListingController {
     private TreeMap<Long, List<String>> checks = new TreeMap<>();
     private TreeMap<Long, List<String>> timeoutCheck = new TreeMap<>();
     private HashMap<String, Long> sessionToTimeoutCheck = new HashMap<>();
+    private List<GroupInfo> groups = new ArrayList<>();
     //private HashMap<String, Boolean> playing = new HashMap<>();
 
     private HashMap<String, HashMap<String, Double>> positionInVideo = new HashMap<>();
@@ -197,6 +198,18 @@ public class ListingController {
                     String groupName = groupNames.remove(group);
                     nameToGroup.remove(groupName);
                 }
+                int numberOfGroups = groups.size();
+                for(int i=0;i<numberOfGroups;i++){
+                    if(groups.get(i).group!=null) {
+                        if (groups.get(i).group.equals(group)) {
+                            groups.remove(i);
+                            break;
+                        }
+                    }
+                }
+                if(numberOfGroups>groups.size()) { // was one removed?
+                    this.template.convertAndSend("/listen/listing/", groups);
+                }
                 if(messages.containsKey(group)){
                     messages.remove(group);
                 }
@@ -231,7 +244,7 @@ public class ListingController {
 
         System.out.print("sessionToTimeoutCheck: ");
         System.out.println(sessionToTimeoutCheck);*/
-        this.template.convertAndSend("/listen/listing/", nameToGroup);
+        //this.template.convertAndSend("/listen/listing/", groups);
     }
     private void registerSession(String sessionKey, String group){
         if(!sessionToGroup.containsKey(sessionKey)) {
@@ -376,8 +389,9 @@ public class ListingController {
                     });
                 });
             }
+            groups.add(gi);
             this.template.convertAndSend("/listen/joined/"+session.getSessionKey(), gi);
-            this.template.convertAndSend("/listen/listing/", nameToGroup);
+            this.template.convertAndSend("/listen/listing/", groups);
         }else{
             return;
         }
@@ -385,9 +399,10 @@ public class ListingController {
 
     @MessageMapping("/listing")
     public void groupListing(@Payload SessionData message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        if(new StoredSessions().contains(animecapAPIService, message.getSession())){
-            Session session = new StoredSessions().get(animecapAPIService, message.getSession());
-            this.template.convertAndSend("/listen/listing/", nameToGroup);
+        StoredSessions ss = new StoredSessions();
+        if(ss.contains(animecapAPIService, message.getSession())){
+            Session session = ss.get(animecapAPIService, message.getSession());
+            this.template.convertAndSend("/listen/listing/", groups);
         }else{
             return;
         }
