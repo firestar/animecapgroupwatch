@@ -87,7 +87,7 @@ public class ListingController {
             GroupInfo groupInfo = new GroupInfo();
             groupInfo.group = groupId;
             groupInfo.groupName = groupName;
-            groups.put(groupName, groupInfo);
+            groups.put(groupId, groupInfo);
             return groupInfo;
         }
         return null;
