@@ -5,8 +5,6 @@ import com.animecap.groupwatch.api.repositories.AnimecapAPIService;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -17,13 +15,11 @@ import org.springframework.web.client.RestTemplate;
  */
 @SpringBootApplication
 @EnableScheduling
-@EnableDiscoveryClient
 @EnableAutoConfiguration
 @Import({WebSocketConfiguration.class})
 public class GroupWatch {
-    public static final String API_SERVICE_URL = "API";
+    public static final String API_SERVICE_URL = "api";
 
-    @LoadBalanced
     @Bean
     RestTemplate restTemplate() {
         return new RestTemplate();

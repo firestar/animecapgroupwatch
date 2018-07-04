@@ -4,7 +4,6 @@ import com.animecap.groupwatch.api.auth.Session;
 import com.animecap.groupwatch.api.models.Episode;
 import com.animecap.groupwatch.api.models.Show;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.logging.Logger;
@@ -14,7 +13,6 @@ import java.util.logging.Logger;
  */
 public class AnimecapAPIService {
     @Autowired
-    @LoadBalanced
     protected RestTemplate restTemplate;
 
     protected String serviceUrl;

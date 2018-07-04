@@ -28,7 +28,6 @@ ext {
 }
 
 dependencies {
-	compile('org.springframework.cloud:spring-cloud-starter-eureka')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-websocket')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
